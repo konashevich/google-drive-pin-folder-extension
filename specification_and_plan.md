@@ -58,20 +58,20 @@ The goal is to enhance the Google Drive PWA/Web interface by adding a native-fee
 ## 4. Implementation Plan
 
 ### Phase 1: Foundation (Setup)
-- [ ] Initialize `manifest.json` with appropriate permissions (`storage`, `activeTab`).
-- [ ] Create basic `content.js` that logs "Extension Loaded" on Drive.
+- [x] Initialize `manifest.json` with appropriate permissions (`storage`, `activeTab`).
+- [x] Create basic `content.js` that logs "Extension Loaded" on Drive.
 
 ### Phase 2: UI Injection (The "Widget")
-- [ ] Implement the logic to find the sidebar injection point using `aria-label` selectors.
-- [ ] Implement "The Cloning Trick" to duplicate a native sidebar item (e.g., "Starred") instead of building an HTML template from scratch.
-- [ ] Add a visual separator (e.g., a native-looking `<hr>`) to distinguish the pinned section.
+- [x] Implement the logic to find the sidebar injection point using `aria-label` selectors.
+- [x] Implement "The Cloning Trick" to duplicate a native sidebar item (e.g., "Starred") instead of building an HTML template from scratch.
+- [x] Add a visual separator (e.g., a native-looking `<hr>`) to distinguish the pinned section.
 
 ### Phase 3: Pinning Logic
-- [ ] Implement the "Pin" button injection into the header.
-- [ ] Implement robust Folder ID extraction: Parse the current URL (`window.location.pathname`) instead of relying on the DOM.
-- [ ] Extract the Folder Name from `document.title` or a stable DOM breadcrumb.
-- [ ] Hook up `chrome.storage.sync` to save/load folders.
-- [ ] Implement the navigation logic. Clicking a pinned folder MUST open it in a new tab (`window.open(url, '_blank')`). This ensures compatibility with installed PWAs configured as multi-tab apps.
+- [x] Implement a custom "Pin" button (using a Floating Action Button) to explicitly separate this functionality from Drive's native "Starred" feature.
+- [x] Implement robust Folder ID extraction: Parse the current URL (`window.location.pathname`).
+- [x] Extract the Folder Name from `document.title`.
+- [x] Hook up `chrome.storage.sync` to save/load folders.
+- [x] Implement the navigation logic. Clicking a pinned folder MUST open it in a new tab (`window.open(url, '_blank')`). This ensures compatibility with installed PWAs configured as multi-tab apps.
 
 ### Phase 4: Polish & Performance
 - [ ] Add micro-animations using CSS transitions.

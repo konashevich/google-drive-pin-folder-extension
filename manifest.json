@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "GDrive Sidebar Pinner",
+  "version": "1.0",
+  "description": "Adds a 'Pinned Folders' widget to Google Drive's sidebar for quick access.",
+  "permissions": [
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://drive.google.com/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "commands": {
+    "pin_unpin_folder": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+P",
+        "mac": "Command+Shift+P"
+      },
+      "description": "Pin or unpin the current folder"
+    }
+  }
+}
