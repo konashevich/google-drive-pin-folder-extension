@@ -13,6 +13,7 @@ This project is ready to upload through your existing Chrome Web Store developer
    - Pinning and unpinning works.
    - A colored Drive folder keeps the same color in the pinned list.
    - Pinned folders open in a new tab.
+   - Switching to another Google Drive account in the same browser profile shows that account's own pinned list.
 
 ## 2. Build The Upload ZIP
 
@@ -56,7 +57,7 @@ Adds a pinned-folder section to Google Drive so users can quickly reopen frequen
 Permission justification for `storage`:
 
 ```text
-Used to save the user's pinned folder list and locally cached folder icon colors.
+Used to save the user's pinned folder list, hashed active-account key, and locally cached folder icon colors.
 ```
 
 Host permission / content script justification for `drive.google.com`:
@@ -68,6 +69,7 @@ Required to add the pinned-folder UI to Google Drive and read the current Drive 
 Data usage disclosure:
 
 - The extension stores user-provided pinned folder IDs and names.
+- The extension stores a hashed active-account key, or the visible Drive account slot as a fallback, so pinned folders stay separated between Google Drive accounts.
 - The extension stores folder color metadata locally.
 - The extension does not collect, sell, transmit, or share user data.
 - The extension does not use remote code, analytics, or advertising.

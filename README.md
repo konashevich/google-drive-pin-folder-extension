@@ -10,6 +10,7 @@ GDrive Sidebar Pinner adds a native-looking **Pinned** section to the Google Dri
 - Show pinned folders directly in the Drive sidebar below **Starred**.
 - Preserve custom Google Drive folder colors in the pinned list.
 - Open pinned folders in new tabs for fast multi-folder workflows.
+- Keep pinned folders separated per Google Drive account in the same browser profile.
 - Sync pinned folder IDs and names through Chrome sync.
 - Use only a small Manifest V3 content script, stylesheet, and `storage` permission.
 
@@ -30,7 +31,7 @@ GDrive Sidebar Pinner adds a native-looking **Pinned** section to the Google Dri
 
 ## Privacy
 
-The extension does not collect or transmit user data. It stores pinned folder IDs and names in `chrome.storage.sync`, and stores detected folder colors locally in `chrome.storage.local`.
+The extension does not collect or transmit user data. It stores pinned folder IDs and names in `chrome.storage.sync`, stores detected folder colors locally in `chrome.storage.local`, and uses a hashed active-account key from the Google Drive page so pins stay separated between Google accounts.
 
 See [PRIVACY.md](PRIVACY.md) for the full policy.
 

@@ -7,6 +7,10 @@
     console.log('GDrive Sidebar Pinner: Extension Loaded');
 
     let pinnedFolders = [];
+    let pinnedFoldersByAccount = {};
+    let legacyPinnedFolders = [];
+    let currentAccountKey = '';
+    let currentDriveUserSlot = '0';
     let isUpdating = false; // guard to prevent observer re-entry
     let colorCacheReady = false;
     let pinsReady = false;
@@ -19,8 +23,10 @@
         if (pinsReady) runUpdate();
     });
 
-    chrome.storage.sync.get(['pinnedFolders'], (result) => {
-        pinnedFolders = result.pinnedFolders || [];
+    chrome.storage.sync.get(['pinnedFolders', 'pinnedFoldersByAccount'], (result) => {
+        legacyPinnedFolders = Array.isArray(result.pinnedFolders) ? result.pinnedFolders : [];
+        pinnedFoldersByAccount = isPlainObject(result.pinnedFoldersByAccount) ? result.pinnedFoldersByAccount : {};
+        refreshAccountState({ migrateLegacyPins: true });
         pinsReady = true;
         if (colorCacheReady) runUpdate();
     });
@@ -28,7 +34,15 @@
     // Listen for storage changes (e.g. from another tab)
     chrome.storage.onChanged.addListener((changes, areaName) => {
         if (changes.pinnedFolders) {
-            pinnedFolders = changes.pinnedFolders.newValue || [];
+            legacyPinnedFolders = Array.isArray(changes.pinnedFolders.newValue) ? changes.pinnedFolders.newValue : [];
+            refreshAccountState({ migrateLegacyPins: true });
+            renderPinnedList();
+        }
+        if (changes.pinnedFoldersByAccount) {
+            pinnedFoldersByAccount = isPlainObject(changes.pinnedFoldersByAccount.newValue)
+                ? changes.pinnedFoldersByAccount.newValue
+                : {};
+            refreshAccountState();
             renderPinnedList();
         }
         if (areaName === 'local' && changes.folderColors) {
@@ -57,13 +71,15 @@
     }, 500);
 
     function runUpdate() {
+        if (!pinsReady || !colorCacheReady) return;
         if (isUpdating) return;
         isUpdating = true;
         try {
+            refreshAccountState();
             scanAndCacheColors(); // scan file list for folder icon colors
             ensureWidgetExists();
             ensureFabExists();
-            syncThemeColor(); // Fix the light PWA header
+            syncDriveTheme();
         } finally {
             // Release guard after a tick so the observer ignores our mutations
             setTimeout(() => { isUpdating = false; }, 50);
@@ -142,7 +158,7 @@
 
         // Include cache state in dedup key so colors update when cache refreshes
         const cacheKey = JSON.stringify(folderColorCache);
-        const stateKey = JSON.stringify(pinnedFolders) + cacheKey;
+        const stateKey = currentAccountKey + JSON.stringify(pinnedFolders) + cacheKey;
         if (stateKey === lastRendered) return;
         lastRendered = stateKey;
 
@@ -158,13 +174,13 @@
 
         pinnedFolders.forEach((folder) => {
             const link = document.createElement('a');
-            link.href = `https://drive.google.com/drive/u/0/folders/${folder.id}`;
+            link.href = buildDriveFolderUrl(folder.id);
             link.target = '_blank';
             link.rel = 'noopener';
             link.className = 'gdp-folder-link';
 
             // Always prefer live cache color over stored value (cache is fresher)
-            const iconColor = normalizeHex(folderColorCache[folder.id]) || normalizeHex(folder.color || '') || '#9aa0a6';
+            const iconColor = normalizeHex(getCachedFolderColor(folder.id)) || normalizeHex(folder.color || '') || '#9aa0a6';
 
             link.innerHTML = `
                 <span class="gdp-folder-icon" style="color: ${iconColor}"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" fill="currentColor"/></svg></span>
@@ -189,9 +205,127 @@
         if (!name) name = 'Unnamed Folder';
 
         // Look up color from cache
-        const color = folderColorCache[id] || null;
+        const color = getCachedFolderColor(id) || null;
 
         return { id, name, color };
+    }
+
+    function refreshAccountState(options = {}) {
+        const previousKey = currentAccountKey;
+        currentDriveUserSlot = getCurrentDriveUserSlot();
+        currentAccountKey = detectCurrentDriveAccountKey();
+
+        maybeMigrateSlotPinsToAccount(previousKey, currentAccountKey);
+
+        if (options.migrateLegacyPins) {
+            maybeMigrateLegacyPinsToCurrentAccount();
+        }
+
+        pinnedFolders = getPinsForCurrentAccount();
+
+        if (previousKey && previousKey !== currentAccountKey) {
+            lastRendered = '';
+            renderPinnedList();
+            updateFabLabel();
+        }
+    }
+
+    function maybeMigrateLegacyPinsToCurrentAccount() {
+        if (!legacyPinnedFolders.length || !currentAccountKey) return;
+        if (Array.isArray(pinnedFoldersByAccount[currentAccountKey]) && pinnedFoldersByAccount[currentAccountKey].length) return;
+
+        pinnedFoldersByAccount = {
+            ...pinnedFoldersByAccount,
+            [currentAccountKey]: legacyPinnedFolders,
+        };
+        legacyPinnedFolders = [];
+
+        chrome.storage.sync.set({ pinnedFoldersByAccount }, () => {
+            chrome.storage.sync.remove('pinnedFolders');
+        });
+    }
+
+    function maybeMigrateSlotPinsToAccount(previousKey, nextKey) {
+        if (!previousKey || previousKey === nextKey) return;
+        if (!previousKey.startsWith('slot:') || !nextKey.startsWith('acct:')) return;
+        if (!Array.isArray(pinnedFoldersByAccount[previousKey]) || !pinnedFoldersByAccount[previousKey].length) return;
+        if (Array.isArray(pinnedFoldersByAccount[nextKey]) && pinnedFoldersByAccount[nextKey].length) return;
+
+        pinnedFoldersByAccount = {
+            ...pinnedFoldersByAccount,
+            [nextKey]: pinnedFoldersByAccount[previousKey],
+        };
+        chrome.storage.sync.set({ pinnedFoldersByAccount });
+    }
+
+    function getPinsForCurrentAccount() {
+        if (!currentAccountKey) return [];
+        const pins = pinnedFoldersByAccount[currentAccountKey];
+        return Array.isArray(pins) ? [...pins] : [];
+    }
+
+    function savePinsForCurrentAccount(nextPins, callback) {
+        if (!currentAccountKey) return;
+
+        pinnedFolders = [...nextPins];
+        pinnedFoldersByAccount = {
+            ...pinnedFoldersByAccount,
+            [currentAccountKey]: pinnedFolders,
+        };
+
+        chrome.storage.sync.set({ pinnedFoldersByAccount }, callback);
+    }
+
+    function detectCurrentDriveAccountKey() {
+        const email = detectCurrentDriveEmail();
+        if (email) return `acct:${hashAccountIdentifier(email.toLowerCase())}`;
+        return `slot:${currentDriveUserSlot || '0'}`;
+    }
+
+    function detectCurrentDriveEmail() {
+        const accountSelectors = [
+            '[aria-label^="Google Account"]',
+            '[aria-label*="Google Account:"]',
+            '[aria-label*="Google Account"]',
+            'a[href*="SignOutOptions"][aria-label]',
+        ];
+
+        for (const selector of accountSelectors) {
+            for (const el of document.querySelectorAll(selector)) {
+                const email = extractEmail(el.getAttribute('aria-label') || '');
+                if (email) return email;
+            }
+        }
+
+        return null;
+    }
+
+    function extractEmail(text) {
+        const match = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+        return match ? match[0].toLowerCase() : null;
+    }
+
+    function hashAccountIdentifier(value) {
+        let hash = 0x811c9dc5;
+        for (let i = 0; i < value.length; i += 1) {
+            hash ^= value.charCodeAt(i);
+            hash = Math.imul(hash, 0x01000193);
+        }
+        return (hash >>> 0).toString(16).padStart(8, '0');
+    }
+
+    function getCurrentDriveUserSlot() {
+        const match = location.pathname.match(/\/drive\/u\/(\d+)(?:\/|$)/);
+        return match ? match[1] : '0';
+    }
+
+    function buildDriveFolderUrl(folderId) {
+        const encodedId = encodeURIComponent(folderId);
+        return `https://drive.google.com/drive/u/${currentDriveUserSlot || '0'}/folders/${encodedId}`;
+    }
+
+    function isPlainObject(value) {
+        return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
     }
 
     // Google Drive color name → hex mapping (all 24 Drive colors)
@@ -266,9 +400,9 @@
             if (!folderId || folderId.length < 10) continue;
 
             const hex = readFolderColorFromRow(row);
-            if (!hex || folderColorCache[folderId] === hex) continue;
+            if (!hex || getCachedFolderColor(folderId) === hex) continue;
 
-            folderColorCache[folderId] = hex;
+            setCachedFolderColor(folderId, hex);
             updated = true;
         }
 
@@ -308,6 +442,20 @@
         return candidates[0]?.hex || null;
     }
 
+    function getCachedFolderColor(folderId) {
+        if (!folderId) return null;
+        return folderColorCache[getFolderColorCacheKey(folderId)] || folderColorCache[folderId] || null;
+    }
+
+    function setCachedFolderColor(folderId, hex) {
+        if (!folderId || !hex) return;
+        folderColorCache[getFolderColorCacheKey(folderId)] = hex;
+    }
+
+    function getFolderColorCacheKey(folderId) {
+        return currentAccountKey ? `${currentAccountKey}:${folderId}` : folderId;
+    }
+
     function scanAriaLabelFolderColors() {
         const elements = document.querySelectorAll('[aria-label*="with colour"], [aria-label*="with color"]');
         if (elements.length === 0) return false;
@@ -328,8 +476,8 @@
             const row = el.closest('[data-id]');
             if (row) {
                 const folderId = row.getAttribute('data-id');
-                if (folderId && folderId.length >= 10 && folderColorCache[folderId] !== hex) {
-                    folderColorCache[folderId] = hex;
+                if (folderId && folderId.length >= 10 && getCachedFolderColor(folderId) !== hex) {
+                    setCachedFolderColor(folderId, hex);
                     updated = true;
                 }
                 continue;
@@ -344,8 +492,8 @@
             const urlMatch = location.pathname.match(/\/folders\/([^/?]+)/);
             if (urlMatch) {
                 const folderId = urlMatch[1];
-                if (folderId.length >= 10 && folderColorCache[folderId] !== hex) {
-                    folderColorCache[folderId] = hex;
+                if (folderId.length >= 10 && getCachedFolderColor(folderId) !== hex) {
+                    setCachedFolderColor(folderId, hex);
                     updated = true;
                 }
             }
@@ -358,8 +506,8 @@
                     const nameEl = r.querySelector('.KL4NAf');
                     if (nameEl && nameEl.textContent.trim() === headerText) {
                         const fId = r.getAttribute('data-id');
-                        if (fId && fId.length >= 10 && folderColorCache[fId] !== hex) {
-                            folderColorCache[fId] = hex;
+                        if (fId && fId.length >= 10 && getCachedFolderColor(fId) !== hex) {
+                            setCachedFolderColor(fId, hex);
                             updated = true;
                         }
                     }
@@ -515,19 +663,21 @@
     }
 
     function onFabClick() {
+        refreshAccountState();
         scanAndCacheColors();
 
         const info = getCurrentFolderInfo();
         if (!info) return;
 
-        const idx = pinnedFolders.findIndex((f) => f.id === info.id);
+        const nextPins = [...pinnedFolders];
+        const idx = nextPins.findIndex((f) => f.id === info.id);
         if (idx > -1) {
-            pinnedFolders.splice(idx, 1);
+            nextPins.splice(idx, 1);
         } else {
-            pinnedFolders.push(info);
+            nextPins.push(info);
         }
 
-        chrome.storage.sync.set({ pinnedFolders }, () => {
+        savePinsForCurrentAccount(nextPins, () => {
             updateFabLabel();
             lastRendered = ''; // force re-render
             renderPinnedList();
@@ -538,7 +688,11 @@
     // THEME COLOR FIX (PWA Header)
     // ──────────────────────────────────────────────
 
-    function syncThemeColor() {
+    function syncDriveTheme() {
+        const theme = detectDriveTheme();
+        document.documentElement.classList.toggle('gdp-theme-dark', theme === 'dark');
+        document.documentElement.classList.toggle('gdp-theme-light', theme === 'light');
+
         // Find or create the theme-color meta tag
         let meta = document.querySelector('meta[name="theme-color"]');
         if (!meta) {
@@ -547,14 +701,72 @@
             document.head.appendChild(meta);
         }
 
-        // Google Drive's dark mode background is approx #131314.
-        // We set the browser frame to match this exactly.
-        const darkThemeColor = '#131314';
+        const themeColor = theme === 'dark' ? '#131314' : '#f8fafd';
         
         // Only update if it's different to avoid unnecessary DOM noise
-        if (meta.getAttribute('content') !== darkThemeColor) {
-            meta.setAttribute('content', darkThemeColor);
-            console.log('GDrive Sidebar Pinner: Syncing frame color to dark');
+        if (meta.getAttribute('content') !== themeColor) {
+            meta.setAttribute('content', themeColor);
         }
+    }
+
+    function detectDriveTheme() {
+        const colorScheme = getComputedStyle(document.documentElement).colorScheme;
+        const background = findDriveBackgroundColor();
+
+        if (background) {
+            return getRelativeLuminance(background) < 0.45 ? 'dark' : 'light';
+        }
+
+        if (colorScheme && colorScheme.includes('dark') && !colorScheme.includes('light')) {
+            return 'dark';
+        }
+
+        if (window.matchMedia?.('(prefers-color-scheme: dark)').matches) {
+            return 'dark';
+        }
+
+        return 'light';
+    }
+
+    function findDriveBackgroundColor() {
+        const candidates = [
+            document.body,
+            document.documentElement,
+            document.querySelector('[role="navigation"]'),
+            document.querySelector('div[role="main"]'),
+            document.querySelector('.a-U-J')?.parentElement,
+        ].filter(Boolean);
+
+        for (const el of candidates) {
+            const color = parseCssColor(getComputedStyle(el).backgroundColor);
+            if (color && color.a > 0.2) return color;
+        }
+
+        return null;
+    }
+
+    function parseCssColor(cssColor) {
+        if (!cssColor || cssColor === 'transparent') return null;
+
+        const match = cssColor.match(/rgba?\(\s*(\d+(?:\.\d+)?)[,\s]+(\d+(?:\.\d+)?)[,\s]+(\d+(?:\.\d+)?)(?:\s*[,/]\s*(\d+(?:\.\d+)?))?\s*\)/i);
+        if (!match) return null;
+
+        return {
+            r: Number(match[1]),
+            g: Number(match[2]),
+            b: Number(match[3]),
+            a: match[4] === undefined ? 1 : Number(match[4]),
+        };
+    }
+
+    function getRelativeLuminance(color) {
+        const [r, g, b] = [color.r, color.g, color.b].map((value) => {
+            const channel = value / 255;
+            return channel <= 0.03928
+                ? channel / 12.92
+                : ((channel + 0.055) / 1.055) ** 2.4;
+        });
+
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
     }
 })();

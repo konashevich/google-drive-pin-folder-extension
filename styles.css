@@ -1,5 +1,47 @@
 /* GDrive Sidebar Pinner — all custom styles, zero dependency on Google's CSS */
 
+html.gdp-theme-light {
+    --gdp-text-color: #1f1f1f;
+    --gdp-secondary-color: #5f6368;
+    --gdp-muted-color: #5f6368;
+    --gdp-hover-bg: rgba(60, 64, 67, 0.08);
+    --gdp-active-bg: rgba(60, 64, 67, 0.12);
+    --gdp-separator-color: rgba(60, 64, 67, 0.18);
+    --gdp-fab-bg: #0b57d0;
+    --gdp-fab-color: #ffffff;
+    --gdp-fab-shadow: rgba(60, 64, 67, 0.28);
+    --gdp-fab-pinned-bg: #e8eaed;
+    --gdp-fab-pinned-color: #3c4043;
+}
+
+html.gdp-theme-dark {
+    --gdp-text-color: #e8eaed;
+    --gdp-secondary-color: #9aa0a6;
+    --gdp-muted-color: #80868b;
+    --gdp-hover-bg: rgba(255, 255, 255, 0.08);
+    --gdp-active-bg: rgba(255, 255, 255, 0.12);
+    --gdp-separator-color: rgba(255, 255, 255, 0.1);
+    --gdp-fab-bg: #004a77;
+    --gdp-fab-color: #c2e7ff;
+    --gdp-fab-shadow: rgba(0, 0, 0, 0.4);
+    --gdp-fab-pinned-bg: #444746;
+    --gdp-fab-pinned-color: #c4c7c5;
+}
+
+html:not(.gdp-theme-light):not(.gdp-theme-dark) {
+    --gdp-text-color: #1f1f1f;
+    --gdp-secondary-color: #5f6368;
+    --gdp-muted-color: #5f6368;
+    --gdp-hover-bg: rgba(60, 64, 67, 0.08);
+    --gdp-active-bg: rgba(60, 64, 67, 0.12);
+    --gdp-separator-color: rgba(60, 64, 67, 0.18);
+    --gdp-fab-bg: #0b57d0;
+    --gdp-fab-color: #ffffff;
+    --gdp-fab-shadow: rgba(60, 64, 67, 0.28);
+    --gdp-fab-pinned-bg: #e8eaed;
+    --gdp-fab-pinned-color: #3c4043;
+}
+
 /* Widget container */
 #gdp-widget {
     margin: 4px 0;
@@ -9,8 +51,8 @@
 .gdp-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 6px 24px;
+    gap: 8px;
+    padding: 6px 16px;
     min-height: 32px;
     user-select: none;
 }
@@ -18,25 +60,25 @@
 .gdp-header-icon {
     display: flex;
     align-items: center;
-    color: #9aa0a6;
+    color: var(--gdp-secondary-color);
 }
 
 .gdp-header-label {
     font-family: 'Google Sans', 'Segoe UI', Roboto, sans-serif;
     font-size: 14px;
     font-weight: 500;
-    color: #e8eaed;
+    color: var(--gdp-text-color);
 }
 
 /* Folder links */
 .gdp-folder-link {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 6px 24px;
+    gap: 8px;
+    padding: 6px 16px;
     min-height: 32px;
     text-decoration: none;
-    color: #e8eaed;
+    color: var(--gdp-text-color);
     font-family: 'Google Sans', 'Segoe UI', Roboto, sans-serif;
     font-size: 14px;
     font-weight: 500;
@@ -50,18 +92,18 @@
 }
 
 .gdp-folder-link:hover {
-    background-color: rgba(255, 255, 255, 0.08);
+    background-color: var(--gdp-hover-bg);
 }
 
 .gdp-folder-link:active {
-    background-color: rgba(255, 255, 255, 0.12);
+    background-color: var(--gdp-active-bg);
 }
 
 .gdp-folder-icon {
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    color: #9aa0a6;
+    color: var(--gdp-secondary-color);
 }
 
 .gdp-folder-name {
@@ -72,9 +114,9 @@
 
 /* Empty state */
 .gdp-empty {
-    padding: 6px 24px 6px 56px;
+    padding: 6px 16px 6px 44px;
     font-size: 13px;
-    color: #80868b;
+    color: var(--gdp-muted-color);
     font-style: italic;
     font-family: 'Google Sans', 'Segoe UI', Roboto, sans-serif;
 }
@@ -83,7 +125,7 @@
 .gdp-separator {
     margin: 4px 16px;
     border: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--gdp-separator-color);
 }
 
 /* Floating Action Button */
@@ -97,11 +139,11 @@
     gap: 8px;
     padding: 12px 24px;
     border-radius: 24px;
-    background: #004a77;
-    color: #c2e7ff;
+    background: var(--gdp-fab-bg);
+    color: var(--gdp-fab-color);
     border: none;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 2px 8px var(--gdp-fab-shadow);
     font-family: 'Google Sans', 'Segoe UI', Roboto, sans-serif;
     font-size: 14px;
     font-weight: 500;
@@ -109,11 +151,11 @@
 }
 
 .gdp-fab:hover {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 16px var(--gdp-fab-shadow);
     transform: translateY(-2px);
 }
 
 .gdp-fab.is-pinned {
-    background: #444746;
-    color: #c4c7c5;
+    background: var(--gdp-fab-pinned-bg);
+    color: var(--gdp-fab-pinned-color);
 }

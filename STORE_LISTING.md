@@ -24,7 +24,8 @@ Key features:
 - Reopen pinned folders from the left sidebar.
 - Preserve custom folder colors in pinned folder icons.
 - Open pinned folders in new tabs for multi-folder workflows.
-- Sync pinned folders across Chrome browsers signed in to the same account.
+- Keep pinned folders separated between Google Drive accounts in the same browser profile.
+- Sync pinned folders across Chrome browsers signed in to the same Chrome account.
 - Lightweight Manifest V3 extension with no analytics, ads, or remote code.
 
 How to use:
@@ -42,7 +43,7 @@ Adds a pinned-folder section to Google Drive so users can quickly reopen frequen
 
 ### storage
 
-Used to save the user's pinned folder list and locally cached folder icon colors.
+Used to save the user's pinned folder list, hashed active-account key, and locally cached folder icon colors.
 
 ### drive.google.com content script
 
@@ -50,7 +51,7 @@ Required to add the pinned-folder UI to Google Drive and read the current Drive 
 
 ## Privacy Practices Summary
 
-The extension stores pinned folder IDs and names using Chrome sync and stores detected folder colors locally. It does not collect, sell, transmit, or share user data. It does not use analytics, advertising, tracking, or remote code.
+The extension stores pinned folder IDs and names using Chrome sync, stores a hashed active-account key or visible Drive account slot so different Google Drive accounts remain separated, and stores detected folder colors locally. It does not collect, sell, transmit, or share user data. It does not use analytics, advertising, tracking, or remote code.
 
 ## Screenshots
 
