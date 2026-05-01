@@ -2,7 +2,12 @@
   "manifest_version": 3,
   "name": "GDrive Sidebar Pinner",
   "version": "1.0",
-  "description": "Adds a 'Pinned Folders' widget to Google Drive's sidebar for quick access.",
+  "description": "A premium sidebar widget for Google Drive that lets you pin folders for instant access. Supports color preservation and multi-tab workflows.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "permissions": [
     "storage"
   ],
