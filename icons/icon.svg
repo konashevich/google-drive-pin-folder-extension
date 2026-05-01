@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Pinned Drive folder">
+  <path d="M10 37c0-6.6 5.4-12 12-12h29c4.1 0 7.9 2.1 10.1 5.6L66 38h40c6.6 0 12 5.4 12 12v54c0 6.6-5.4 12-12 12H22c-6.6 0-12-5.4-12-12V37z" fill="#fbbc04"/>
+  <path d="M10 50c0-6.6 5.4-12 12-12h84c6.6 0 12 5.4 12 12v54c0 6.6-5.4 12-12 12H22c-6.6 0-12-5.4-12-12V50z" fill="#fdd663"/>
+  <path d="M10 61h108v43c0 6.6-5.4 12-12 12H22c-6.6 0-12-5.4-12-12V61z" fill="#fbbc04"/>
+  <path d="M10 61h36v55H22c-6.6 0-12-5.4-12-12V61z" fill="#34a853"/>
+  <path d="M46 61h72v43c0 6.6-5.4 12-12 12H46V61z" fill="#4285f4"/>
+  <path d="M46 61h20v55H46V61z" fill="#1a73e8" opacity=".75"/>
+  <path d="M10 61h108v10H10V61z" fill="#ffffff" opacity=".2"/>
+
+  <circle cx="75" cy="50" r="22" fill="#ea4335"/>
+  <path d="M61 67h28l-5 28H66l-5-28z" fill="#d93025"/>
+  <ellipse cx="75" cy="71" rx="25" ry="13" fill="#ea4335"/>
+  <path d="M75 85l9 3-17 32c-.9 1.7-3.5 1.1-3.5-.8L64 85h11z" fill="#5f6368"/>
+  <path d="M58 49c3.5-11 18.5-15.3 31-7.6-8.6 4.7-19.6 5.1-31 7.6z" fill="#ff8a80" opacity=".85"/>
+  <path d="M57 71c4.7-9.2 18.2-11.7 30-5.4-7.8 6.5-19.9 7.4-30 5.4z" fill="#ff796c" opacity=".62"/>
+</svg>

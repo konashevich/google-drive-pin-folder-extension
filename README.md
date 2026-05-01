@@ -1,38 +1,67 @@
 # GDrive Sidebar Pinner
 
-A premium, native-feeling Chrome/Brave extension that adds a "Pinned Folders" section to your Google Drive sidebar for high-speed navigation.
+GDrive Sidebar Pinner adds a native-looking **Pinned** section to the Google Drive sidebar, so frequently used folders are always one click away.
 
-![Sidebar Screenshot](images/screenshot_sidebar.png)
+![Pinned sidebar screenshot](images/screenshot_sidebar.png)
 
 ## Features
 
-- **Persistent Pinned Section**: Adds a dedicated "Pinned" widget right below your "Starred" section in the Google Drive sidebar.
-- **Color Preservation**: Automatically detects and preserves your folder colors in the sidebar icons.
-- **Multi-Tab Workflow**: Pinned folders open in new tabs by default, perfect for PWA users and power navigators.
-- **Floating Action Button (FAB)**: A native-styled "Pin Folder" button appears when you are inside a directory.
-- **SPA Resilient**: Built with a debounced MutationObserver to handle Google Drive's dynamic page updates without performance lag or UI flickering.
-- **Sync Support**: Pins are synced across your devices via your Google account.
+- Pin the current Google Drive folder from a floating **Pin Folder** button.
+- Show pinned folders directly in the Drive sidebar below **Starred**.
+- Preserve custom Google Drive folder colors in the pinned list.
+- Open pinned folders in new tabs for fast multi-folder workflows.
+- Sync pinned folder IDs and names through Chrome sync.
+- Use only a small Manifest V3 content script, stylesheet, and `storage` permission.
 
-## Installation
+## Install Locally
 
-1. Clone or download this repository.
-2. Open Chrome/Brave and navigate to `chrome://extensions`.
-3. Enable **Developer mode** in the top right corner.
-4. Click **Load unpacked** and select the project directory.
+1. Open `chrome://extensions` or `brave://extensions`.
+2. Enable **Developer mode**.
+3. Click **Load unpacked**.
+4. Select this project folder.
+5. Open <https://drive.google.com> and navigate into a folder.
 
-## Publishing to Web Store
+## Use
 
-To bundle the extension for production:
+1. Open any folder in Google Drive.
+2. Click **Pin Folder** in the bottom-right corner.
+3. Use the new **Pinned** section in the left sidebar to reopen that folder.
+4. Click **Unpin** while inside a pinned folder to remove it.
 
-1. Ensure all icons (16, 48, 128) are present in the root directory.
-2. Create a ZIP file of the repository (excluding `.git` and `images/` source files).
-3. Upload to the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole).
+## Privacy
 
-## Technical Details
+The extension does not collect or transmit user data. It stores pinned folder IDs and names in `chrome.storage.sync`, and stores detected folder colors locally in `chrome.storage.local`.
 
-- **Manifest V3**: Using the latest extension standards.
-- **Storage**: Uses `chrome.storage.sync` for folder metadata and `chrome.storage.local` for color caching.
-- **DOM Manipulation**: Custom-built UI elements (zero-cloning) to avoid event listener conflicts with Google Drive's internal React router.
+See [PRIVACY.md](PRIVACY.md) for the full policy.
 
----
-*Created by Antigravity AI.*
+## Build For Chrome Web Store
+
+Run:
+
+```bash
+./scripts/package-webstore.sh
+```
+
+The upload ZIP is written to `dist/`. The package intentionally includes only:
+
+- `manifest.json`
+- `content.js`
+- `styles.css`
+- `icons/icon16.png`
+- `icons/icon48.png`
+- `icons/icon128.png`
+
+Full publication instructions are in [docs/CHROME_WEB_STORE_RELEASE.md](docs/CHROME_WEB_STORE_RELEASE.md).
+
+## Project Structure
+
+```text
+content.js                 Extension content script
+styles.css                 Injected Google Drive UI styles
+manifest.json              Manifest V3 metadata
+icons/                     Extension icons and source SVG
+images/                    Repository screenshots and source imagery
+store_assets/              Chrome Web Store screenshots
+scripts/package-webstore.sh Web Store ZIP builder
+docs/                      Release and project documentation
+```

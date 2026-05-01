@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "GDrive Sidebar Pinner",
-  "version": "1.0",
-  "description": "A premium sidebar widget for Google Drive that lets you pin folders for instant access. Supports color preservation and multi-tab workflows.",
+  "version": "1.0.0",
+  "description": "Pin Google Drive folders in a native-looking sidebar, with folder colors preserved and synced across Chrome.",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
@@ -18,14 +18,5 @@
       "css": ["styles.css"],
       "run_at": "document_end"
     }
-  ],
-  "commands": {
-    "pin_unpin_folder": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+P",
-        "mac": "Command+Shift+P"
-      },
-      "description": "Pin or unpin the current folder"
-    }
-  }
+  ]
 }
