@@ -1,16 +1,37 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Pinned Drive folder">
-  <path d="M10 37c0-6.6 5.4-12 12-12h29c4.1 0 7.9 2.1 10.1 5.6L66 38h40c6.6 0 12 5.4 12 12v54c0 6.6-5.4 12-12 12H22c-6.6 0-12-5.4-12-12V37z" fill="#fbbc04"/>
-  <path d="M10 50c0-6.6 5.4-12 12-12h84c6.6 0 12 5.4 12 12v54c0 6.6-5.4 12-12 12H22c-6.6 0-12-5.4-12-12V50z" fill="#fdd663"/>
-  <path d="M10 61h108v43c0 6.6-5.4 12-12 12H22c-6.6 0-12-5.4-12-12V61z" fill="#fbbc04"/>
-  <path d="M10 61h36v55H22c-6.6 0-12-5.4-12-12V61z" fill="#34a853"/>
-  <path d="M46 61h72v43c0 6.6-5.4 12-12 12H46V61z" fill="#4285f4"/>
-  <path d="M46 61h20v55H46V61z" fill="#1a73e8" opacity=".75"/>
-  <path d="M10 61h108v10H10V61z" fill="#ffffff" opacity=".2"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%">
+  <defs>
+    <filter id="icon-shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.15" />
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.1" />
+    </filter>
+    
+    <path id="front-shape" d="M16 48 L112 48 L112 100 C112 106.627 106.627 112 100 112 L28 112 C21.373 112 16 106.627 16 100 Z" />
+    <clipPath id="front-clip">
+      <use href="#front-shape" />
+    </clipPath>
+  </defs>
 
-  <circle cx="75" cy="50" r="22" fill="#ea4335"/>
-  <path d="M61 67h28l-5 28H66l-5-28z" fill="#d93025"/>
-  <ellipse cx="75" cy="71" rx="25" ry="13" fill="#ea4335"/>
-  <path d="M75 85l9 3-17 32c-.9 1.7-3.5 1.1-3.5-.8L64 85h11z" fill="#5f6368"/>
-  <path d="M58 49c3.5-11 18.5-15.3 31-7.6-8.6 4.7-19.6 5.1-31 7.6z" fill="#ff8a80" opacity=".85"/>
-  <path d="M57 71c4.7-9.2 18.2-11.7 30-5.4-7.8 6.5-19.9 7.4-30 5.4z" fill="#ff796c" opacity=".62"/>
+  <g filter="url(#icon-shadow)">
+    <path d="M 28 20 L 52 20 C 55 20 58 21.5 60 24 L 68 36 L 100 36 C 106.627 36 112 41.373 112 48 L 112 100 C 112 106.627 106.627 112 100 112 L 28 112 C 21.373 112 16 106.627 16 100 L 16 32 C 16 25.373 21.373 20 28 20 Z" fill="#FBBC05" />
+
+    <rect x="16" y="48" width="96" height="3" fill="#000000" opacity="0.08" />
+
+    <use href="#front-shape" fill="#4285F4" />
+
+    <polygon points="16,48 80,48 -20,148 16,148" fill="#34A853" clip-path="url(#front-clip)" />
+
+    <ellipse cx="78" cy="87" rx="7" ry="2.5" fill="#000000" opacity="0.25" transform="rotate(-15 78 87)" />
+
+    <g transform="rotate(30 80 85)">
+      <polygon points="78,56 80,56 80,85" fill="#9AA0A6" />
+      
+      <polygon points="80,56 82,56 80,85" fill="#5F6368" />
+      
+      <rect x="71" y="50" width="18" height="6" rx="3" fill="#C5221F" />
+      
+      <path d="M 65 20 C 65 0, 95 0, 95 20 C 95 35, 87 40, 87 50 L 73 50 C 73 40, 65 35, 65 20 Z" fill="#EA4335" />
+      
+      <ellipse cx="75" cy="15" rx="5" ry="3" fill="#FFFFFF" opacity="0.3" transform="rotate(-20 75 15)" />
+    </g>
+  </g>
 </svg>

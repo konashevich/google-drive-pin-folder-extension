@@ -15,6 +15,7 @@ zip -qr "$PACKAGE" \
   styles.css \
   icons/icon16.png \
   icons/icon48.png \
-  icons/icon128.png
+  icons/icon128.png \
+  icons/icon.svg
 
 echo "$PACKAGE"

@@ -6,7 +6,7 @@ GDrive Sidebar Pinner
 
 ## Short Description
 
-Pin Google Drive folders in a native-looking sidebar, with folder colors preserved and synced across Chrome.
+Pin Google Drive folders to your sidebar with native styling, automatic color sync, and multi-account support.
 
 ## Category
 
@@ -14,26 +14,29 @@ Productivity
 
 ## Detailed Description
 
-GDrive Sidebar Pinner adds a clean **Pinned** section to the Google Drive sidebar, right below Starred, so your most-used folders are always easy to reopen.
+**Elevate your Google Drive workflow with the native-feeling Pinned section.**
 
-Instead of repeatedly navigating through deep folder trees, open a folder once, click **Pin Folder**, and it appears in your Drive sidebar for quick access.
+GDrive Sidebar Pinner seamlessly integrates a "Pinned" category into your Google Drive sidebar, placing your most critical folders exactly where they belong: right below Starred. Stop digging through deep folder hierarchies and start navigating with a single click.
 
-Key features:
+### ✨ Premium Features
 
-- Pin any Google Drive folder from inside the folder page.
-- Reopen pinned folders from the left sidebar.
-- Preserve custom folder colors in pinned folder icons.
-- Open pinned folders in new tabs for multi-folder workflows.
-- Keep pinned folders separated between Google Drive accounts in the same browser profile.
-- Sync pinned folders across Chrome browsers signed in to the same Chrome account.
-- Lightweight Manifest V3 extension with no analytics, ads, or remote code.
+- **Native Integration:** Looks and feels like a built-in Google Drive feature. No clunky overlays or distracting UI.
+- **Smart Color Sync:** Your folder colors are automatically detected and preserved. If a folder is Blue in Drive, it stays Blue in your Pinned list.
+- **Multi-Account Support:** (NEW) Perfectly handles multiple Google accounts in the same browser profile. Your work pins stay at work, and your personal pins stay personal.
+- **Instant Access:** A floating "Pin Folder" button appears only when you need it, letting you bookmark any folder in a split second.
+- **Cloud Sync:** Your pinned folders are synced across all your Chrome browsers via your Google account.
+- **Privacy First:** Lightweight Manifest V3 implementation. No tracking, no analytics, and no remote code. Your data stays between you and Google.
 
-How to use:
+### 🚀 How to Use
 
-1. Open Google Drive.
-2. Navigate into a folder.
-3. Click **Pin Folder**.
-4. Use the **Pinned** sidebar section to reopen that folder later.
+1. Open any folder in Google Drive.
+2. Click the floating **Pin Folder** button in the bottom-right.
+3. Your folder is now instantly accessible from the **Pinned** section in the left sidebar.
+4. To remove, simply click **Unpin** while inside that folder.
+
+### 🛠 Built for Power Users
+
+Whether you are managing complex client projects or just want to keep your tax receipts handy, GDrive Sidebar Pinner turns Google Drive into a high-efficiency workspace.
 
 ## Single Purpose Statement
 
@@ -42,11 +45,9 @@ Adds a pinned-folder section to Google Drive so users can quickly reopen frequen
 ## Permission Justifications
 
 ### storage
-
 Used to save the user's pinned folder list, hashed active-account key, and locally cached folder icon colors.
 
 ### drive.google.com content script
-
 Required to add the pinned-folder UI to Google Drive and read the current Drive folder page state.
 
 ## Privacy Practices Summary
@@ -57,8 +58,9 @@ The extension stores pinned folder IDs and names using Chrome sync, stores a has
 
 Use these prepared files:
 
-- `store_assets/screenshot-sidebar-1280x800.png`
-- `store_assets/screenshot-fab-1280x800.png`
+- `store_assets/store-ready-screenshot-1.png`
+- `store_assets/store-ready-screenshot-2.png`
+- `store_assets/store-ready-screenshot-3.png`
 
 Optional promotional tile:
 
@@ -67,3 +69,4 @@ Optional promotional tile:
 ## Support / Website
 
 Use the GitHub repository URL after you publish the repository.
+

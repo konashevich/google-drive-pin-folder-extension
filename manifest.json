@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "GDrive Sidebar Pinner",
-  "version": "1.0.0",
-  "description": "Pin Google Drive folders in a native-looking sidebar, with folder colors preserved and synced across Chrome.",
+  "version": "1.1.0",
+  "description": "Pin Google Drive folders to your sidebar with native styling, automatic color sync, and multi-account support.",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",

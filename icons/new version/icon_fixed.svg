@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Folder with push pin">
+  <defs>
+    <linearGradient id="tab" x1="14" y1="22" x2="112" y2="70" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE37A"/>
+      <stop offset="1" stop-color="#F6B400"/>
+    </linearGradient>
+    <linearGradient id="front" x1="14" y1="47" x2="116" y2="118" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFD95A"/>
+      <stop offset="1" stop-color="#F4B400"/>
+    </linearGradient>
+    <linearGradient id="pinRed" x1="70" y1="33" x2="95" y2="82" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF665B"/>
+      <stop offset="0.48" stop-color="#EA4335"/>
+      <stop offset="1" stop-color="#B3261E"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="79" y1="74" x2="67" y2="105" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F1F3F4"/>
+      <stop offset="0.45" stop-color="#9AA0A6"/>
+      <stop offset="1" stop-color="#3C4043"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity=".24"/>
+    </filter>
+    <filter id="pinShadow" x="-35%" y="-35%" width="170%" height="180%">
+      <feDropShadow dx="0" dy="3" stdDeviation="2.2" flood-color="#000" flood-opacity=".28"/>
+    </filter>
+  </defs>
+
+  <!-- folder -->
+  <path d="M10 37c0-6.6 5.4-12 12-12h27.4c4.1 0 7.9 2.1 10.1 5.6L64.4 38H106c6.6 0 12 5.4 12 12v54c0 6.6-5.4 12-12 12H22c-6.6 0-12-5.4-12-12V37z" fill="url(#tab)"/>
+  <path d="M10 52c0-6.6 5.4-12 12-12h84c6.6 0 12 5.4 12 12v52c0 6.6-5.4 12-12 12H22c-6.6 0-12-5.4-12-12V52z" fill="url(#front)" filter="url(#softShadow)"/>
+  <path d="M10 61h108v43c0 6.6-5.4 12-12 12H22c-6.6 0-12-5.4-12-12V61z" fill="#FABC14" opacity=".72"/>
+  <path d="M12 52c0-5.5 4.5-10 10-10h84c5.5 0 10 4.5 10 10v5H12v-5z" fill="#FFF3BE" opacity=".45"/>
+
+  <!-- subtle pin contact shadow on folder -->
+  <ellipse cx="77.5" cy="75.5" rx="18" ry="9" fill="#000" opacity=".16" transform="rotate(-25 77.5 75.5)"/>
+
+  <!-- push pin, attached to front of folder -->
+  <g filter="url(#pinShadow)" transform="rotate(-24 78 66)">
+    <!-- metal needle goes into folder -->
+    <path d="M76.5 72.5h5L79 104c-.2 2.6-4 2.6-4.2 0l-2.6-31.5h4.3z" fill="url(#metal)"/>
+    <path d="M77.4 76.5h1.9l-1 22.5c-.1 1.2-1.8 1.2-1.9 0l-1-22.5h2z" fill="#FFFFFF" opacity=".38"/>
+
+    <!-- lower collar -->
+    <ellipse cx="77" cy="71" rx="17" ry="8" fill="#C5221F"/>
+    <ellipse cx="77" cy="68.5" rx="16" ry="7.4" fill="url(#pinRed)"/>
+
+    <!-- stem -->
+    <path d="M70 48h14l-2 22H72l-2-22z" fill="#D93025"/>
+    <path d="M73 49h4v19h-4z" fill="#FF8A80" opacity=".35"/>
+
+    <!-- head -->
+    <ellipse cx="77" cy="45.5" rx="20" ry="11" fill="#A50E0E" opacity=".28"/>
+    <ellipse cx="77" cy="43" rx="21" ry="11.5" fill="url(#pinRed)"/>
+    <ellipse cx="77" cy="39" rx="16" ry="6" fill="#FF8A80" opacity=".45"/>
+    <path d="M61 41c3-6.2 11.2-8.8 22.8-6.4-6.8 1.4-14.2 3.5-22.8 6.4z" fill="#FFFFFF" opacity=".25"/>
+  </g>
+</svg>
