@@ -14,27 +14,27 @@ Productivity
 
 ## Detailed Description
 
-**Elevate your Google Drive workflow with the native-feeling Pinned section.**
+ELEVATE YOUR GOOGLE DRIVE WORKFLOW WITH THE NATIVE-FEELING PINNED SECTION.
 
 GDrive Sidebar Pinner seamlessly integrates a "Pinned" category into your Google Drive sidebar, placing your most critical folders exactly where they belong: right below Starred. Stop digging through deep folder hierarchies and start navigating with a single click.
 
-### ✨ Premium Features
+PREMIUM FEATURES
 
-- **Native Integration:** Looks and feels like a built-in Google Drive feature. No clunky overlays or distracting UI.
-- **Smart Color Sync:** Your folder colors are automatically detected and preserved. If a folder is Blue in Drive, it stays Blue in your Pinned list.
-- **Multi-Account Support:** (NEW) Perfectly handles multiple Google accounts in the same browser profile. Your work pins stay at work, and your personal pins stay personal.
-- **Instant Access:** A floating "Pin Folder" button appears only when you need it, letting you bookmark any folder in a split second.
-- **Cloud Sync:** Your pinned folders are synced across all your Chrome browsers via your Google account.
-- **Privacy First:** Lightweight Manifest V3 implementation. No tracking, no analytics, and no remote code. Your data stays between you and Google.
+- Native Integration: Looks and feels like a built-in Google Drive feature. No clunky overlays or distracting UI.
+- Smart Color Sync: Your folder colors are automatically detected and preserved. If a folder is Blue in Drive, it stays Blue in your Pinned list.
+- Multi-Account Support: (NEW) Perfectly handles multiple Google accounts in the same browser profile. Your work pins stay at work, and your personal pins stay personal.
+- Instant Access: A floating "Pin Folder" button appears only when you need it, letting you bookmark any folder in a split second.
+- Cloud Sync: Your pinned folders are synced across all your Chrome browsers via your Google account.
+- Privacy First: Lightweight Manifest V3 implementation. No tracking, no analytics, and no remote code. Your data stays between you and Google.
 
-### 🚀 How to Use
+HOW TO USE
 
 1. Open any folder in Google Drive.
-2. Click the floating **Pin Folder** button in the bottom-right.
-3. Your folder is now instantly accessible from the **Pinned** section in the left sidebar.
-4. To remove, simply click **Unpin** while inside that folder.
+2. Click the floating "Pin Folder" button in the bottom-right.
+3. Your folder is now instantly accessible from the "Pinned" section in the left sidebar.
+4. To remove, simply click "Unpin" while inside that folder.
 
-### 🛠 Built for Power Users
+BUILT FOR POWER USERS
 
 Whether you are managing complex client projects or just want to keep your tax receipts handy, GDrive Sidebar Pinner turns Google Drive into a high-efficiency workspace.
 
