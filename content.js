@@ -61,6 +61,9 @@
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
+    document.addEventListener('pointerdown', cacheFolderColorFromDriveEvent, true);
+    document.addEventListener('click', cacheFolderColorFromDriveEvent, true);
+
     // Also poll on SPA navigation (URL changes without page reload)
     let lastUrl = location.href;
     setInterval(() => {
@@ -84,6 +87,24 @@
             // Release guard after a tick so the observer ignores our mutations
             setTimeout(() => { isUpdating = false; }, 50);
         }
+    }
+
+    function cacheFolderColorFromDriveEvent(event) {
+        if (!pinsReady || !colorCacheReady) return;
+
+        const item = event.target?.closest?.('[data-id]');
+        if (!item || item.closest('#gdp-widget, #gdp-fab')) return;
+
+        const folderId = item.getAttribute('data-id');
+        if (!folderId || folderId.length < 10) return;
+
+        const hex = readFolderColorFromDriveItem(item);
+        if (!hex || getCachedFolderColor(folderId) === hex) return;
+
+        setCachedFolderColor(folderId, hex);
+        chrome.storage.local.set({ folderColors: folderColorCache });
+        lastRendered = '';
+        renderPinnedList();
     }
 
     // ──────────────────────────────────────────────
@@ -192,6 +213,16 @@
     }
 
     function getCurrentFolderInfo() {
+        const info = readCurrentFolderBaseInfo();
+        if (!info) return null;
+
+        return {
+            ...info,
+            color: getCachedFolderColor(info.id) || findCurrentFolderColorOnPage(info) || null,
+        };
+    }
+
+    function readCurrentFolderBaseInfo() {
         const path = window.location.pathname;
         if (!path.includes('/folders/')) return null;
 
@@ -204,10 +235,7 @@
         name = name.replace(/^Google Drive\s*-\s*/i, '').trim();
         if (!name) name = 'Unnamed Folder';
 
-        // Look up color from cache
-        const color = getCachedFolderColor(id) || null;
-
-        return { id, name, color };
+        return { id, name };
     }
 
     function refreshAccountState(options = {}) {
@@ -376,7 +404,15 @@
     function scanAndCacheColors() {
         let updated = false;
 
+        if (scanCurrentFolderForColor()) {
+            updated = true;
+        }
+
         if (scanVisibleFolderRowsForColors()) {
+            updated = true;
+        }
+
+        if (scanVisiblePinnedFoldersForColors()) {
             updated = true;
         }
 
@@ -399,7 +435,7 @@
             const folderId = row.getAttribute('data-id');
             if (!folderId || folderId.length < 10) continue;
 
-            const hex = readFolderColorFromRow(row);
+            const hex = readFolderColorFromDriveItem(row);
             if (!hex || getCachedFolderColor(folderId) === hex) continue;
 
             setCachedFolderColor(folderId, hex);
@@ -409,10 +445,96 @@
         return updated;
     }
 
+    function scanCurrentFolderForColor() {
+        const info = readCurrentFolderBaseInfo();
+        if (!info) return false;
+
+        const hex = findCurrentFolderColorOnPage(info);
+        if (!hex || getCachedFolderColor(info.id) === hex) return false;
+
+        setCachedFolderColor(info.id, hex);
+        return true;
+    }
+
+    function scanVisiblePinnedFoldersForColors() {
+        let updated = false;
+
+        for (const folder of pinnedFolders) {
+            if (!folder?.id || !folder?.name) continue;
+
+            const hex = findVisibleFolderColorForPinnedFolder(folder);
+            if (!hex || getCachedFolderColor(folder.id) === hex) continue;
+
+            setCachedFolderColor(folder.id, hex);
+            updated = true;
+        }
+
+        return updated;
+    }
+
+    function findVisibleFolderColorForPinnedFolder(folder) {
+        for (const row of document.querySelectorAll('[data-id]')) {
+            if (row.getAttribute('data-id') !== folder.id) continue;
+
+            const hex = readFolderColorFromDriveItem(row);
+            if (hex) return hex;
+        }
+
+        const matchingRows = [];
+        for (const row of getVisibleDriveItemRoots()) {
+            if (!driveItemNameMatches(row, folder.name)) continue;
+
+            const hex = readFolderColorFromRow(row);
+            if (hex) matchingRows.push(hex);
+        }
+
+        const uniqueMatches = [...new Set(matchingRows)];
+        return uniqueMatches.length === 1 ? uniqueMatches[0] : null;
+    }
+
+    function getVisibleDriveItemRoots() {
+        const roots = new Set();
+
+        for (const item of document.querySelectorAll('[data-id]')) {
+            for (const root of getDriveItemColorRoots(item)) {
+                roots.add(root);
+            }
+        }
+
+        return [...roots];
+    }
+
+    function readFolderColorFromDriveItem(item) {
+        for (const root of getDriveItemColorRoots(item)) {
+            const hex = readFolderColorFromRow(root);
+            if (hex) return hex;
+        }
+
+        return null;
+    }
+
+    function getDriveItemColorRoots(item) {
+        const roots = [];
+        let el = item;
+
+        while (el && el !== document.body && roots.length < 8) {
+            const nestedItems = el.querySelectorAll?.('[data-id]') || [];
+            if (el !== item && nestedItems.length > 1) break;
+
+            roots.push(el);
+
+            if (el.getAttribute?.('role') === 'row' || el.tagName?.toLowerCase() === 'tr') break;
+
+            el = el.parentElement;
+        }
+
+        return roots;
+    }
+
     function readFolderColorFromRow(row) {
         const rowRect = safeRect(row);
         const candidates = [];
-        const elements = row.querySelectorAll('*');
+        const elements = [row, ...row.querySelectorAll('*')];
 
         for (const el of elements) {
             const style = getComputedStyle(el);
@@ -442,6 +564,117 @@
         return candidates[0]?.hex || null;
     }
 
+    function findCurrentFolderColorOnPage(info) {
+        return findCurrentFolderColorFromAriaLabels(info)
+            || findCurrentFolderColorNearName(info)
+            || null;
+    }
+
+    function findCurrentFolderColorFromAriaLabels(info) {
+        const matches = [];
+
+        for (const el of document.querySelectorAll('[aria-label]')) {
+            if (el.closest('#gdp-widget, #gdp-fab')) continue;
+            if (el.closest('[data-id]')) continue;
+            if (!isElementVisibleForScan(el)) continue;
+
+            const hex = parseDriveFolderColorLabel(el.getAttribute('aria-label') || '');
+            if (!hex) continue;
+
+            if (isElementNearFolderName(el, info.name)) return hex;
+            matches.push(hex);
+        }
+
+        const uniqueMatches = [...new Set(matches)];
+        return uniqueMatches.length === 1 ? uniqueMatches[0] : null;
+    }
+
+    function findCurrentFolderColorNearName(info) {
+        const matches = [];
+
+        for (const el of document.querySelectorAll('h1,h2,h3,span,div,[data-tooltip],[aria-label]')) {
+            if (el.closest('#gdp-widget, #gdp-fab')) continue;
+            if (!elementReferencesFolderName(el, info.name)) continue;
+
+            for (const root of getNameColorSearchRoots(el)) {
+                const hex = readFolderColorFromRow(root);
+                if (hex) matches.push(hex);
+            }
+        }
+
+        const uniqueMatches = [...new Set(matches)];
+        return uniqueMatches.length === 1 ? uniqueMatches[0] : null;
+    }
+
+    function getNameColorSearchRoots(el) {
+        const roots = [];
+        let node = el;
+
+        while (node && node !== document.body && roots.length < 6) {
+            roots.push(node);
+            if (node.getAttribute?.('role') === 'heading') break;
+            if (node.getAttribute?.('role') === 'row') break;
+            node = node.parentElement;
+        }
+
+        return roots;
+    }
+
+    function isElementNearFolderName(el, folderName) {
+        return elementReferencesFolderName(el, folderName)
+            || getNameColorSearchRoots(el).some((root) => elementReferencesFolderName(root, folderName));
+    }
+
+    function elementReferencesFolderName(el, folderName) {
+        const expected = normalizeDriveItemName(folderName);
+        if (!expected) return false;
+
+        const text = normalizeDriveItemName(el.textContent);
+        if (text === expected) return true;
+        if (text.length <= expected.length + 40 && text.includes(expected)) return true;
+
+        const attributeValues = [
+            el.getAttribute?.('aria-label'),
+            el.getAttribute?.('data-tooltip'),
+            el.getAttribute?.('data-tooltip-unhoverable'),
+        ].map(normalizeDriveItemName);
+
+        return attributeValues.some((value) => value === expected || value.includes(expected));
+    }
+
+    function driveItemNameMatches(row, expectedName) {
+        const normalizedExpected = normalizeDriveItemName(expectedName);
+        if (!normalizedExpected) return false;
+
+        for (const candidate of readDriveItemNameCandidates(row)) {
+            if (normalizeDriveItemName(candidate) === normalizedExpected) return true;
+        }
+
+        return false;
+    }
+
+    function readDriveItemNameCandidates(row) {
+        const candidates = [];
+        const nameSelectors = [
+            '.KL4NAf',
+            '[data-tooltip]',
+            '[aria-label]',
+        ];
+
+        const elements = [row, ...row.querySelectorAll(nameSelectors.join(','))];
+        for (const el of elements) {
+            candidates.push(el.textContent);
+            candidates.push(el.getAttribute('data-tooltip'));
+            candidates.push(el.getAttribute('aria-label'));
+        }
+
+        return candidates.filter(Boolean);
+    }
+
+    function normalizeDriveItemName(name) {
+        return String(name || '').replace(/\s+/g, ' ').trim();
+    }
+
     function getCachedFolderColor(folderId) {
         if (!folderId) return null;
         return folderColorCache[getFolderColorCacheKey(folderId)] || folderColorCache[folderId] || null;
@@ -457,18 +690,16 @@
     }
 
     function scanAriaLabelFolderColors() {
-        const elements = document.querySelectorAll('[aria-label*="with colour"], [aria-label*="with color"]');
+        const elements = document.querySelectorAll('[aria-label]');
         if (elements.length === 0) return false;
 
         let updated = false;
+        const currentFolder = readCurrentFolderBaseInfo();
         for (const el of elements) {
-            const label = el.getAttribute('aria-label') || '';
-            const match = label.match(/Folder with colou?r\s+(.+)/i);
-            if (!match) continue;
+            if (!isElementVisibleForScan(el)) continue;
 
-            // Strip all types of quotes (straight, curly, etc.)
-            const colorName = match[1].trim().replace(/["'\u201C\u201D\u2018\u2019]/g, '').trim().toLowerCase();
-            const hex = GDRIVE_COLOR_MAP[colorName];
+            const label = el.getAttribute('aria-label') || '';
+            const hex = parseDriveFolderColorLabel(label);
             if (!hex) continue;
 
             // Try to find folder ID from multiple sources:
@@ -483,22 +714,20 @@
                 continue;
             }
 
+            if (currentFolder && isElementNearFolderName(el, currentFolder.name)) {
+                if (getCachedFolderColor(currentFolder.id) !== hex) {
+                    setCachedFolderColor(currentFolder.id, hex);
+                    updated = true;
+                }
+                continue;
+            }
+
             // 2. Details panel — extract folder name, then match from URL or page title
             //    Also try to extract from the header text next to the icon
             const headerParent = el.closest('.a-Mg-V-j, [role="link"], h2')?.parentElement;
             const headerText = headerParent?.querySelector('div')?.textContent?.trim();
 
-            // 3. If we're inside the folder, use the current URL's folder ID
-            const urlMatch = location.pathname.match(/\/folders\/([^/?]+)/);
-            if (urlMatch) {
-                const folderId = urlMatch[1];
-                if (folderId.length >= 10 && getCachedFolderColor(folderId) !== hex) {
-                    setCachedFolderColor(folderId, hex);
-                    updated = true;
-                }
-            }
-
-            // 4. Try the breadcrumb/title folder name match  
+            // 3. Try the breadcrumb/title folder name match
             //    Look for nearby folder name text and match to data-id in the file list
             if (headerText) {
                 const allRows = document.querySelectorAll('[data-id]');
@@ -516,6 +745,34 @@
         }
 
         return updated;
+    }
+
+    function parseDriveFolderColorLabel(label) {
+        const normalizedLabel = normalizeDriveItemName(label)
+            .replace(/["'\u201C\u201D\u2018\u2019]/g, '')
+            .toLowerCase();
+
+        if (!normalizedLabel.includes('folder')) return null;
+
+        const colorNames = Object.keys(GDRIVE_COLOR_MAP).sort((a, b) => b.length - a.length);
+        for (const colorName of colorNames) {
+            const escapedName = escapeRegExp(colorName);
+            const patterns = [
+                new RegExp(`\\b(?:with\\s+)?colou?r\\s*:?\\s*${escapedName}\\b`, 'i'),
+                new RegExp(`\\b${escapedName}\\s+folder\\b`, 'i'),
+                new RegExp(`\\bfolder\\s+${escapedName}\\b`, 'i'),
+            ];
+
+            if (patterns.some((pattern) => pattern.test(normalizedLabel))) {
+                return GDRIVE_COLOR_MAP[colorName];
+            }
+        }
+
+        return null;
+    }
+
+    function escapeRegExp(value) {
+        return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
     function scoreIconCandidate(el, rect, rowRect, hasMask) {
@@ -577,6 +834,16 @@
 
     function isVisibleRect(rect) {
         return rect && rect.width > 0 && rect.height > 0;
+    }
+
+    function isElementVisibleForScan(el) {
+        const rect = safeRect(el);
+        if (!isVisibleRect(rect)) return false;
+
+        const style = getComputedStyle(el);
+        return style.display !== 'none'
+            && style.visibility !== 'hidden'
+            && style.opacity !== '0';
     }
 
     function cssColorToHex(cssColor) {
@@ -666,7 +933,7 @@
         refreshAccountState();
         scanAndCacheColors();
 
-        const info = getCurrentFolderInfo();
+        let info = getCurrentFolderInfo();
         if (!info) return;
 
         const nextPins = [...pinnedFolders];
@@ -674,6 +941,12 @@
         if (idx > -1) {
             nextPins.splice(idx, 1);
         } else {
+            const color = getCachedFolderColor(info.id) || findCurrentFolderColorOnPage(info) || info.color || null;
+            if (color) {
+                setCachedFolderColor(info.id, color);
+                chrome.storage.local.set({ folderColors: folderColorCache });
+                info = { ...info, color };
+            }
             nextPins.push(info);
         }
 
