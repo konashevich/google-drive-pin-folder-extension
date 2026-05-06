@@ -1,6 +1,6 @@
-# Chrome Web Store Release Guide
+# Chrome Web Store Update Guide
 
-This project is ready to upload through your existing Chrome Web Store developer account.
+This project is already published. These notes cover updating the existing Chrome Web Store item.
 
 ## 1. Before Upload
 
@@ -26,7 +26,7 @@ Run:
 Upload the ZIP printed by the script, for example:
 
 ```text
-dist/gdrive-sidebar-pinner-1.1.0.zip
+dist/gdrive-sidebar-pinner-1.1.1.zip
 ```
 
 Do not upload the whole repository ZIP. The Web Store package should contain only:
@@ -94,24 +94,68 @@ A demo video is available at `images/demo-video.mp4`. The Chrome Web Store requi
 1. Upload the MP4 to YouTube.
 2. Paste the YouTube URL into the **Promo video** field in the developer console.
 
-## 6. Manual Upload Steps
+## 6. API Update Setup
+
+Google Cloud project:
+
+```text
+chromium-466007
+```
+
+Service account for API publishing:
+
+```text
+chrome-web-store-publisher@chromium-466007.iam.gserviceaccount.com
+```
+
+Chrome Web Store identifiers:
+
+```text
+Publisher ID: d7a941da-a849-4e7a-aca2-86ca562d724d
+Item ID: fnnhheoolpallbahcbafdfindgcdhoak
+```
+
+The Chrome Web Store API is enabled in the project. The service account has been added in the Chrome Web Store Developer Dashboard under the publisher Account section, and `fetchStatus` returns `HTTP_STATUS=200` for the published GDrive Sidebar Pinner item.
+
+The update script uses the identifiers above by default. Override them only if publishing a different item:
+
+```bash
+export CWS_PUBLISHER_ID="d7a941da-a849-4e7a-aca2-86ca562d724d"
+export CWS_EXTENSION_ID="fnnhheoolpallbahcbafdfindgcdhoak"
+```
+
+Check API access without uploading:
+
+```bash
+CWS_STATUS_ONLY=1 ./scripts/publish-webstore-api.sh
+```
+
+Upload a new package through the API:
+
+```bash
+./scripts/publish-webstore-api.sh
+```
+
+Upload and submit for review/publish:
+
+```bash
+CWS_PUBLISH_NOW=1 ./scripts/publish-webstore-api.sh
+```
+
+## 7. Manual Upload Fallback
 
 1. Go to <https://chrome.google.com/webstore/devconsole>.
 2. Select your existing developer account.
-3. Click **New item**.
+3. Open the existing GDrive Sidebar Pinner item.
 4. Upload the ZIP from `dist/`.
-5. Fill in the store listing using **[STORE_LISTING.md](../STORE_LISTING.md)**.
-6. Upload screenshots from `store_assets/`.
-7. Complete the privacy practices form using the notes above.
-8. Save draft.
-9. Submit for review.
+5. Add release notes.
+6. Submit for review.
 
-## 7. Version Updates Later
+## 8. Version Updates Later
 
 For future releases:
 
 1. Update `version` in `manifest.json`.
 2. Run `./scripts/package-webstore.sh`.
-3. Upload the new ZIP to the existing Web Store item.
+3. Upload with `./scripts/publish-webstore-api.sh`, or use the manual fallback above.
 4. Add a short changelog in the Web Store release notes.
-
